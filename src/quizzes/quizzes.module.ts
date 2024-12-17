@@ -6,6 +6,6 @@ import { QuizzesRepository } from '@/src/quizzes/quizzes.repository';
 
 @Module({
   controllers: [QuizzesController],
-  providers: [PrismaService, QuizzesService, QuizzesRepository],
+  providers: [QuizzesService, QuizzesRepository, PrismaService],
 })
 export class QuizzesModule {}
