@@ -43,7 +43,7 @@ export class QuizzesService {
 
   async update(id: number, updateQuizDto: UpdateQuizDto) { 
 
-    return `This action update a #${id} quiz`;
+    return `This action  a #${id} quiz`;
   }
 
   remove(id: number) {
