@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                Int     @id @default(autoincrement())
+  userId            Int     @unique
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique @map("session_token")
+  userId       Int      @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  phone         String?
+  instagram     String?
+  hash          String?
+  password      String?
+  token         String?
+  role          Role      @default(USER)
+
+  accounts Account[]
+  sessions Session[]
+
+  favoritesQuizzes Favorite[]
+  completedQuizzes CompletedQuizzes[]
+  likedQuizzes     LikedQuizzes[]
+  unLikedQuizzes   UnLikedQuizzes[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model VerificationToken {
+  id         Int      @id @default(autoincrement())
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+model Quiz {
+  id        Int        @id @default(autoincrement())
+  image     String
+  title     String
+  questions Question[]
+
+  isPublished Boolean            @default(false)
+  
+  favorites Favorite[]
+  Completed CompletedQuizzes[]
+  liked     LikedQuizzes[]
+  unLiked   UnLikedQuizzes[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @default(now())
+
+  @@map("quizzes")
+}
+
+model Favorite {
+  id Int @id @default(autoincrement())
+
+  userId Int?
+  User   User? @relation(fields: [userId], references: [id])
+
+  quizId Int?
+  Quiz   Quiz? @relation(fields: [quizId], references: [id])
+
+  @@map("favorites")
+}
+
+model CompletedQuizzes {
+  id Int @id @default(autoincrement())
+
+  userId Int?
+  User   User? @relation(fields: [userId], references: [id])
+
+  quizId Int?
+  Quiz   Quiz? @relation(fields: [quizId], references: [id])
+
+  @@map("completedQuizzes")
+}
+
+model LikedQuizzes {
+  id Int @id @default(autoincrement())
+
+  userId Int?
+  User   User? @relation(fields: [userId], references: [id])
+
+  quizId Int?
+  Quiz   Quiz? @relation(fields: [quizId], references: [id])
+
+  @@map("likedQuizzes")
+}
+
+model UnLikedQuizzes {
+  id Int @id @default(autoincrement())
+
+  userId Int?
+  User   User? @relation(fields: [userId], references: [id])
+
+  quizId Int?
+  Quiz   Quiz? @relation(fields: [quizId], references: [id])
+
+  @@map("unLikedQuizzes")
+}
+
+model Question {
+  id            Int      @id @default(autoincrement())
+  question      String
+  correctAnswer String
+  answers       Answer[]
+
+  quizId Int?
+  Quiz   Quiz? @relation(fields: [quizId], references: [id])
+
+  @@map("questions")
+}
+
+model Answer {
+  id         Int       @id @default(autoincrement())
+  answer     String
+  questionId Int
+  question   Question? @relation(fields: [questionId], references: [id])
+
+  @@map("answers")
+}
