@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { QuizzesRepository } from '../../repositories/quizzes/quizzes.repository';
-import { CreateQuizDto } from '@/src/interface/dtos/quizzes/create-quiz.dto';
-import { UpdateQuizDto } from '@/src/interface/dtos/quizzes/update-quiz.dto';
+import { QuizzesRepository } from './quizzes.repository';
+import { CreateQuizDto } from '@/src/quizzes/dtos/create-quiz.dto';
+import { UpdateQuizDto } from '@/src/quizzes/dtos/update-quiz.dto';
 
 @Injectable()
 export class QuizzesService {
