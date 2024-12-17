@@ -2,10 +2,44 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, Quiz } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
+import { Query } from 'express-serve-static-core'
 
 @Injectable()
 export class QuizzesRepository {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService) { }
+
+  async searchFavorites(query: Query) {    
+    const quizzesFinded = await this.prismaService.quiz.findMany({
+      where: {
+        title: {
+          contains: query.search_query as string,
+        },
+        favorites: {
+          some: {
+            userId: parseInt(query.userId as string),
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+    return quizzesFinded;
+  }
+
+  async search(query: Query) {
+    const quizzesFinded = await this.prismaService.quiz.findMany({
+      where: {
+        title: {
+          contains: query.search_query as string,
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+    return quizzesFinded;
+  }
 
   async findLatestQuizzesAdded(): Promise<Quiz[]> {
     const allQuiz = await this.prismaService.quiz.findMany({
@@ -159,14 +193,12 @@ export class QuizzesRepository {
           favorites: true,
         },
       });
-      console.log(allQuizzes);
-      
       return allQuizzes;
     } catch (error) {
       console.log(error);
     }
   }
-  
+
   async findAll(): Promise<Quiz[]> {
     try {
       const allQuizzes = await this.prismaService.quiz.findMany({
@@ -179,14 +211,12 @@ export class QuizzesRepository {
           favorites: true,
         },
       });
-      console.log(allQuizzes);
-      
       return allQuizzes;
     } catch (error) {
       console.log(error);
     }
   }
- 
+
   async findOne(id: number): Promise<Quiz> {
     try {
       const quiz = await this.prismaService.quiz.findUnique({
@@ -211,12 +241,12 @@ export class QuizzesRepository {
     }
   }
 
-  async create (createQuizDto: CreateQuizDto) : Promise<Quiz>{
-    const { image, title  } =  createQuizDto;
+  async create(createQuizDto: CreateQuizDto): Promise<Quiz> {
+    const { image, title } = createQuizDto;
     const quiz = await this.prismaService.quiz.create({
       data: {
         image,
-        title 
+        title
       }
     })
 

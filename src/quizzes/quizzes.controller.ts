@@ -3,11 +3,17 @@ import { ApiTags } from '@nestjs/swagger';
 import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
+import { Query as ExpressQuery } from 'express-serve-static-core'
 
 @Controller('quizzes')
 @ApiTags("Quizzes")
 export class QuizzesController {
   constructor(private readonly quizzesService: QuizzesService) {}
+
+  @Get('results')
+  async search(@Query() query: ExpressQuery) {
+    return await this.quizzesService.search(query);
+  }
 
   @Get("latest")
   async findLatestQuizzesAdded() {
@@ -17,6 +23,11 @@ export class QuizzesController {
   @Get('favorites')
   async findAllFavorites(@Query('userId') userId: string) {        
     return await this.quizzesService.findAllFavorites(+userId);
+  }
+  
+  @Get('favorites/results')
+  async searchFavorites(@Query() query: ExpressQuery) {
+    return await this.quizzesService.searchFavorites(query);
   }
 
   @Post("favorite")
@@ -38,9 +49,7 @@ export class QuizzesController {
   }
 
   @Post()
-  create(@Body() createQuizDto: CreateQuizDto) { 
-    console.log(createQuizDto);
-       
+  create(@Body() createQuizDto: CreateQuizDto) {        
     return this.quizzesService.create(createQuizDto);
   }
 
