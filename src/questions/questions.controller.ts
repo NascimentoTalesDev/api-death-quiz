@@ -23,12 +23,14 @@ export class QuestionsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateQuestionDto: UpdateQuestionDto) {
-    return this.questionsService.update(+id, updateQuestionDto);
+  async update(@Param('id') id: string, @Body() updateQuestionDto: UpdateQuestionDto) {    
+    return await this.questionsService.update(+id, updateQuestionDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.questionsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    console.log("ID", id);
+    
+    return await this.questionsService.remove(+id);
   }
 }

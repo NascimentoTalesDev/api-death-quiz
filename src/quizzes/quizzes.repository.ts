@@ -3,29 +3,11 @@ import { Prisma, Quiz } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { Query } from 'express-serve-static-core'
+import { UpdateQuizDto } from './dto/update-quiz.dto';
 
 @Injectable()
 export class QuizzesRepository {
   constructor(private prismaService: PrismaService) { }
-
-  async searchFavorites(query: Query) {    
-    const quizzesFinded = await this.prismaService.quiz.findMany({
-      where: {
-        title: {
-          contains: query.search_query as string,
-        },
-        favorites: {
-          some: {
-            userId: parseInt(query.userId as string),
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    });
-    return quizzesFinded;
-  }
 
   async search(query: Query) {
     const quizzesFinded = await this.prismaService.quiz.findMany({
@@ -36,7 +18,15 @@ export class QuizzesRepository {
       },
       orderBy: {
         createdAt: 'asc'
-      }
+      },
+      include: {
+        questions: {
+          include: {
+            answers: true,
+          },
+        },
+        favorites: true,
+      },
     });
     return quizzesFinded;
   }
@@ -79,6 +69,25 @@ export class QuizzesRepository {
     });
 
     return allQuiz;
+  }
+
+  async searchFavorites(query: Query) {
+    const quizzesFinded = await this.prismaService.quiz.findMany({
+      where: {
+        title: {
+          contains: query.search_query as string,
+        },
+        favorites: {
+          some: {
+            userId: parseInt(query.userId as string),
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+    return quizzesFinded;
   }
 
   async favorite(quizId: number, userId: number) {
@@ -252,4 +261,58 @@ export class QuizzesRepository {
 
     return quiz
   }
+
+  async update(id: number, updateQuizDto: UpdateQuizDto): Promise<Quiz> {
+    const { image, title } = updateQuizDto;    
+    const quizUpdated = await this.prismaService.quiz.update({
+      where:{
+        id
+      },
+      data: {
+        title,
+        image
+      },
+    })
+
+    return quizUpdated
+  }
+
+  async remove(id: number): Promise<Quiz> {
+    const question = await this.prismaService.question.findFirst({
+      where: {
+        quizId: id,
+      },
+    });
+  
+    if (question) {
+      const answersExist = await this.prismaService.answer.findMany({
+        where: {
+          questionId: question.id,
+        },
+      });
+  
+      if (answersExist.length > 0) {
+        await this.prismaService.answer.deleteMany({
+          where: {
+            questionId: question.id,
+          },
+        });
+      }
+  
+      await this.prismaService.question.deleteMany({
+        where: {
+          quizId: id,
+        },
+      });
+    }
+  
+    const quizDeleted = await this.prismaService.quiz.delete({
+      where: {
+        id,
+      },
+    });
+  
+    return quizDeleted;
+  }
+  
 }

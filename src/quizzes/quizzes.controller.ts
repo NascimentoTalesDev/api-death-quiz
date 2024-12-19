@@ -69,12 +69,12 @@ export class QuizzesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateQuizDto: UpdateQuizDto) {    
-    return this.quizzesService.update(+id, updateQuizDto);
+  async update(@Param('id') id: string, @Body() updateQuizDto: UpdateQuizDto) {        
+    return await this.quizzesService.update(+id, updateQuizDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.quizzesService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.quizzesService.remove(+id);
   }
 }

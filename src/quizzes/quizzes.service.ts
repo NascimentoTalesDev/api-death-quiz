@@ -52,11 +52,10 @@ export class QuizzesService {
   }
 
   async update(id: number, updateQuizDto: UpdateQuizDto) { 
-
-    return `This action update a #${id} quiz`;
+    return await this.quizzesRepository.update(id, updateQuizDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} quiz`;
+  async remove(id: number) {
+    return await this.quizzesRepository.remove(id);
   }
 }

@@ -19,11 +19,11 @@ export class QuestionsService {
     return `This action returns a #${id} question`;
   }
 
-  update(id: number, updateQuestionDto: UpdateQuestionDto) {
-    return `This action updates a #${id} question`;
+  async update(id: number, updateQuestionDto: UpdateQuestionDto) {
+    return await this.questionsRepository.update(id, updateQuestionDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} question`;
+  async remove(id: number) {
+    return await this.questionsRepository.remove(id);
   }
 }
