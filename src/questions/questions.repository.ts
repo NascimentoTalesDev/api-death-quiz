@@ -30,36 +30,54 @@ export class QuestionsRepository {
     return createdQuestion
   }
 
-  async update (id: number, updateQuestionDto: UpdateQuestionDto){    
-    const { correctAnswer, question, answers  } =  updateQuestionDto;
-
-    const updatedQuestion = await this.prismaService.question.update({
-      where:{
-        id
-      },
-      data:{
-        correctAnswer,
-        question
-      }
+  async update(id: number, updateQuestionDto: UpdateQuestionDto) {
+    const { correctAnswer, question, answers } = updateQuestionDto;
+  
+    // Verificar se a questão existe
+    const existingQuestion = await this.prismaService.question.findUnique({
+      where: { id },
     });
-
-    await this.prismaService.answer.deleteMany({      
-      where:{
-        questionId: id
-      }
-    })
-
-    await Promise.all(answers.map(answer => 
-      this.prismaService.answer.create({      
-        data:{
-          questionId: id,
-          answer : answer.text
+  
+    if (!existingQuestion) {
+      throw new Error('Pergunta não encontrada');
+    }
+  
+    try {
+      // Atualizar a questão
+      const updatedQuestion = await this.prismaService.question.update({
+        where: { id },
+        data: {
+          correctAnswer,
+          question
         }
-      })
-    ));
-
-    return updatedQuestion
+      });
+  
+      // Excluir as respostas existentes
+      await this.prismaService.answer.deleteMany({
+        where: {
+          questionId: id
+        }
+      });
+  
+      // Criar as novas respostas
+      await Promise.all(
+        answers.map(answer =>
+          this.prismaService.answer.create({
+            data: {
+              questionId: id,
+              answer: answer.text
+            }
+          })
+        )
+      );
+  
+      return updatedQuestion;
+    } catch (error) {
+      console.error('Erro ao atualizar a pergunta:', error);
+      throw new Error('Ocorreu um erro ao atualizar a pergunta');
+    }
   }
+  
 
   async remove (id: number){    
     await this.prismaService.answer.deleteMany({      

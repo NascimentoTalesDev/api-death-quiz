@@ -263,19 +263,32 @@ export class QuizzesRepository {
   }
 
   async update(id: number, updateQuizDto: UpdateQuizDto): Promise<Quiz> {
-    const { image, title } = updateQuizDto;    
-    const quizUpdated = await this.prismaService.quiz.update({
-      where:{
-        id
-      },
-      data: {
-        title,
-        image
-      },
-    })
-
-    return quizUpdated
+    const { image, title } = updateQuizDto;
+  
+    const quizExists = await this.prismaService.quiz.findUnique({
+      where: { id },
+    });
+  
+    if (!quizExists) {
+      throw new Error('Quiz não encontrado');
+    }
+  
+    try {
+      const quizUpdated = await this.prismaService.quiz.update({
+        where: { id },
+        data: {
+          title, 
+          image
+        },
+      });
+  
+      return quizUpdated;
+    } catch (error) {
+      console.error('Erro ao atualizar o quiz:', error);
+      throw new Error('Ocorreu um erro ao atualizar o quiz');
+    }
   }
+  
 
   async remove(id: number): Promise<Quiz> {
     const question = await this.prismaService.question.findFirst({
